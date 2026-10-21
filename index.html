@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yubarta SAS - Gestor de Licitaciones SECOP II</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        yubarta: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                            navy: '#0B192C',
+                            teal: '#008DDA',
+                            gold: '#FFB200'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+        }
+    </style>
+</head>
+<body class="h-full text-slate-800 antialiased flex flex-col font-sans">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-yubarta-navy text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand & Location -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-yubarta-teal to-blue-400 flex items-center justify-center text-white font-bold text-xl shadow-inner">
+                        Y
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h1 class="font-bold text-lg text-white leading-tight">YUBARTA S.A.S.</h1>
+                            <span class="bg-blue-900/80 text-blue-200 text-xs px-2 py-0.5 rounded-full border border-blue-700 font-medium">Sede Cali</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Sistema Inteligente de Filtrado de Licitaciones SECOP II</p>
+                    </div>
+                </div>
+
+                <!-- Live Status & Action Buttons -->
+                <div class="flex items-center space-x-3">
+                    <div class="hidden md:flex items-center space-x-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 text-xs">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-slate-300">Datos Abiertos Colombia: <strong class="text-emerald-400">Conectado</strong></span>
+                    </div>
+
+                    <button onclick="triggerScan()" id="scanBtn" class="bg-yubarta-teal hover:bg-sky-600 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition shadow-sm">
+                        <i class="fa-solid fa-arrows-rotate" id="scanIcon"></i>
+                        <span>Escanear Hoy</span>
+                    </button>
+
+                    <button onclick="exportToCSV()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-1.5" title="Exportar Base de Datos">
+                        <i class="fa-solid fa-file-excel text-emerald-400"></i>
+                        <span class="hidden sm:inline">Exportar Excel</span>
+                    </button>
+
+                    <button onclick="generateReport()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-1.5" title="Generar Informe">
+                        <i class="fa-solid fa-file-pdf text-red-400"></i>
+                        <span class="hidden sm:inline">Informe</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sub-header Tagline & Fast Profile Filters -->
+    <div class="bg-slate-900 border-b border-slate-800 text-slate-300 text-xs py-2 px-4">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center space-x-4">
+                <span class="text-slate-400 font-medium"><i class="fa-solid fa-bullseye text-yubarta-gold mr-1"></i> Modalidades:</span>
+                <span class="bg-slate-800 px-2 py-0.5 rounded text-slate-300 border border-slate-700">Subasta Inversa</span>
+                <span class="bg-slate-800 px-2 py-0.5 rounded text-slate-300 border border-slate-700">Mínima Cuantía</span>
+                <span class="bg-slate-800 px-2 py-0.5 rounded text-slate-300 border border-slate-700">Menor Cuantía</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <span class="text-slate-400 font-medium"><i class="fa-solid fa-tags text-yubarta-teal mr-1"></i> Rubros Objetivo:</span>
+                <span class="text-slate-300">Dotación, Deportivo, Uniformes, Papelería y Útiles</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+        <!-- Metrics KPI Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Metric 1 -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Detectados Hoy</p>
+                    <h3 class="text-2xl font-bold text-slate-900 mt-1" id="kpiTotal">0</h3>
+                    <p class="text-xs text-slate-500 mt-1"><span class="text-emerald-600 font-medium"><i class="fa-solid fa-clock"></i> Sincronizado</span> SECOP II</p>
+                </div>
+                <div class="p-3 bg-blue-50 text-yubarta-teal rounded-lg">
+                    <i class="fa-solid fa-magnifying-glass text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Metric 2 -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aprobados (>70% Match)</p>
+                    <h3 class="text-2xl font-bold text-emerald-600 mt-1" id="kpiAprobados">0</h3>
+                    <p class="text-xs text-slate-500 mt-1"><span class="text-emerald-600 font-medium font-semibold" id="kpiRatio">0%</span> de viabilidad alta</p>
+                </div>
+                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+                    <i class="fa-solid fa-circle-check text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Metric 3 -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Cuantía Total Disponible</p>
+                    <h3 class="text-2xl font-bold text-slate-900 mt-1" id="kpiMonto">$0</h3>
+                    <p class="text-xs text-slate-500 mt-1">Presupuesto acumulado COP</p>
+                </div>
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-lg">
+                    <i class="fa-solid fa-sack-dollar text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Metric 4 -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Por Participar / Marcados</p>
+                    <h3 class="text-2xl font-bold text-yubarta-teal mt-1" id="kpiInteresados">0</h3>
+                    <p class="text-xs text-slate-500 mt-1">En lista de postulaciones</p>
+                </div>
+                <div class="p-3 bg-sky-50 text-yubarta-teal rounded-lg">
+                    <i class="fa-solid fa-star text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Panel -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-3 gap-2">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-sliders text-yubarta-teal"></i>
+                    <h2 class="font-bold text-slate-800 text-base">Filtros Avanzados de Búsqueda Diaria</h2>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="resetFilters()" class="text-xs text-slate-500 hover:text-slate-800 font-medium underline">Restablecer Filtros</button>
+                    <span class="text-slate-300">|</span>
+                    <span class="text-xs text-slate-500">Mostrando <strong id="filterCount" class="text-slate-800">0</strong> resultados</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                <!-- Search Keyword -->
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Palabra clave / Objeto</label>
+                    <div class="relative">
+                        <input type="text" id="filterKeyword" oninput="applyFilters()" placeholder="Ej. Uniformes, Balones, Papel..." class="w-full pl-8 pr-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yubarta-teal/50 focus:border-yubarta-teal text-xs">
+                        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-400"></i>
+                    </div>
+                </div>
+
+                <!-- Modalidad -->
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Modalidad SECOP II</label>
+                    <select id="filterModalidad" onchange="applyFilters()" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yubarta-teal/50 focus:border-yubarta-teal text-xs bg-white">
+                        <option value="ALL">Todas las Modalidades Objetivo</option>
+                        <option value="Subasta Inversa">Subasta Inversa</option>
+                        <option value="Mínima Cuantía">Mínima Cuantía</option>
+                        <option value="Selección Abreviada Menor Cuantía">Selección Abreviada Menor Cuantía</option>
+                    </select>
+                </div>
+
+                <!-- Categoria / Rubro -->
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Categoría de Interés</label>
+                    <select id="filterCategory" onchange="applyFilters()" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yubarta-teal/50 focus:border-yubarta-teal text-xs bg-white">
+                        <option value="ALL">Todas las Categorías Yubarta</option>
+                        <option value="Dotación">Dotación Industrial / Calzado</option>
+                        <option value="Implementación Deportiva">Implementación Deportiva</option>
+                        <option value="Uniformes">Uniformes / Textiles</option>
+                        <option value="Papelería">Papelería y Útiles de Oficina</option>
+                    </select>
+                </div>
+
+                <!-- Ubicacion -->
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Ubicación / Geografía</label>
+                    <select id="filterLocation" onchange="applyFilters()" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yubarta-teal/50 focus:border-yubarta-teal text-xs bg-white">
+                        <option value="ALL">Todas las Ubicaciones</option>
+                        <option value="Cali">Cali (Prioridad Local)</option>
+                        <option value="Valle del Cauca">Valle del Cauca</option>
+                        <option value="Nacional">Resto del País</option>
+                    </select>
+                </div>
+
+                <!-- Match Scoring Minimun -->
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Coincidencia Mínima (Match %)</label>
+                    <select id="filterMatch" onchange="applyFilters()" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yubarta-teal/50 focus:border-yubarta-teal text-xs bg-white">
+                        <option value="0">Todos los puntajes (0% +)</option>
+                        <option value="50">Coincidencia Media (> 50%)</option>
+                        <option value="75" selected>Alta Compatibilidad (> 75%)</option>
+                        <option value="90">Compatibilidad Máxima (> 90%)</option>
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Estado Interno Yubarta</label>
+                    <select id="filterStatus" onchange="applyFilters()" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yubarta-teal/50 focus:border-yubarta-teal text-xs bg-white">
+                        <option value="ALL">Todos los Estados</option>
+                        <option value="NUEVO">Nuevo (Sin revisar)</option>
+                        <option value="INTERESA">Interesa / Para Participar</option>
+                        <option value="EN_REVISION">En Revisión Términos</option>
+                        <option value="DESCARTADO">Descartado</option>
+                    </select>
+                </div>
+
+                <!-- Presupuesto Range -->
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Presupuesto Máx (COP)</label>
+                    <input type="number" id="filterMaxBudget" oninput="applyFilters()" placeholder="Ej. 300000000" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yubarta-teal/50 focus:border-yubarta-teal text-xs">
+                </div>
+
+                <!-- Fecha Publicacion -->
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Filtro Fecha</label>
+                    <select id="filterDate" onchange="applyFilters()" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yubarta-teal/50 focus:border-yubarta-teal text-xs bg-white">
+                        <option value="ALL">Histórico Reciente</option>
+                        <option value="TODAY" selected>Publicados Hoy / Últimas 24h</option>
+                        <option value="3DAYS">Últimos 3 días</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scanning Status Bar (Hidden by default) -->
+        <div id="scanBar" class="hidden bg-yubarta-navy text-white p-4 rounded-xl shadow-lg flex items-center justify-between animate-pulse">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-spinner fa-spin text-yubarta-gold text-xl"></i>
+                <div>
+                    <h4 class="font-bold text-sm">Consultando API Datos Abiertos Colombia (SECOP II)...</h4>
+                    <p class="text-xs text-slate-300" id="scanStatusText">Descargando últimos procesos de Subasta, Mínima y Menor Cuantía para Cali y Valle...</p>
+                </div>
+            </div>
+            <span class="text-xs font-mono bg-slate-800 px-3 py-1 rounded border border-slate-700 text-yubarta-gold">API: datos.gov.co</span>
+        </div>
+
+        <!-- Table Container -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 bg-slate-50">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-database text-yubarta-teal"></i>
+                    Base de Datos de Procesos SECOP II
+                </h3>
+                <div class="flex items-center space-x-2 text-xs">
+                    <span class="text-slate-500">Ordenar por:</span>
+                    <select id="sortBy" onchange="sortData()" class="border border-slate-300 rounded px-2 py-1 bg-white font-medium text-slate-700">
+                        <option value="match_desc">Coincidencia Match (Mayor a menor)</option>
+                        <option value="budget_desc">Presupuesto (Mayor a menor)</option>
+                        <option value="budget_asc">Presupuesto (Menor a mayor)</option>
+                        <option value="date_asc">Cierre Más Próximo</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Responsive Table -->
+            <div class="overflow-x-auto min-h-[380px]">
+                <table class="w-full text-left text-xs text-slate-600">
+                    <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+                        <tr>
+                            <th class="py-3 px-4">Proceso ID</th>
+                            <th class="py-3 px-4">Entidad Compradora</th>
+                            <th class="py-3 px-4">Objeto Contractual</th>
+                            <th class="py-3 px-4">Modalidad / Ubicación</th>
+                            <th class="py-3 px-4 text-right">Presupuesto (COP)</th>
+                            <th class="py-3 px-4 text-center">Cierre</th>
+                            <th class="py-3 px-4 text-center">Match Yubarta</th>
+                            <th class="py-3 px-4 text-center">Estado</th>
+                            <th class="py-3 px-4 text-center">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-200">
+                        <!-- Dynamic Rows injected via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Table Footer & Pagination -->
+            <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-500">
+                <div id="paginationInfo">Mostrando 0 de 0 procesos</div>
+                <div class="flex space-x-1" id="paginationBtns">
+                    <!-- Pagination buttons -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Detail View -->
+    <div id="detailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- Modal Header -->
+            <div class="bg-yubarta-navy text-white px-6 py-4 flex items-center justify-between border-b border-slate-800">
+                <div class="flex items-center space-x-3">
+                    <span id="modalMatchBadge" class="px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-500 text-white">95% Match</span>
+                    <div>
+                        <h3 class="font-bold text-base" id="modalProcessId">CO1.BDOS.123456</h3>
+                        <p class="text-xs text-slate-300" id="modalEntity">Alcaldía de Santiago de Cali</p>
+                    </div>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-6 overflow-y-auto space-y-5 text-slate-700 text-xs">
+                <!-- Main Details Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div>
+                        <span class="text-slate-400 block uppercase font-semibold">Modalidad</span>
+                        <span class="font-bold text-slate-800 text-sm" id="modalModalidad">Subasta Inversa</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block uppercase font-semibold">Presupuesto Estimado</span>
+                        <span class="font-bold text-emerald-600 text-base" id="modalBudget">$150,000,000 COP</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block uppercase font-semibold">Ubicación Ejecución</span>
+                        <span class="font-semibold text-slate-800" id="modalLocation"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i> Cali, Valle del Cauca</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block uppercase font-semibold">Fecha y Hora de Cierre</span>
+                        <span class="font-semibold text-red-600" id="modalClosing">2026-10-25 15:00</span>
+                    </div>
+                </div>
+
+                <!-- Objeto completo -->
+                <div>
+                    <h4 class="font-bold text-slate-900 text-sm mb-1">Objeto Contractual Completo:</h4>
+                    <p class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-slate-700 leading-relaxed font-sans" id="modalObject">
+                        Suministro e implementación de kits deportivos y elementos de papelería para las instituciones educativas del municipio de Cali...
+                    </p>
+                </div>
+
+                <!-- Requisitos y Criterios clave Yubarta -->
+                <div class="space-y-2">
+                    <h4 class="font-bold text-slate-900 text-sm">Análisis de Compatibilidad Yubarta:</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        <div class="flex items-center space-x-2 bg-emerald-50 border border-emerald-200 text-emerald-800 p-2 rounded-lg">
+                            <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
+                            <span>Rubro en objeto principal (Dotación/Papelería)</span>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-emerald-50 border border-emerald-200 text-emerald-800 p-2 rounded-lg">
+                            <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
+                            <span>Sede Cali/Valle (Sin logística foránea)</span>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-blue-50 border border-blue-200 text-blue-800 p-2 rounded-lg">
+                            <i class="fa-solid fa-info-circle text-blue-600 text-base"></i>
+                            <span id="modalModalidadCheck">Modalidad ágil requerida</span>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-slate-100 border border-slate-200 text-slate-700 p-2 rounded-lg">
+                            <i class="fa-solid fa-file-contract text-slate-500 text-base"></i>
+                            <span>Certificación RUP solicitada</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Decision & Actions -->
+                <div class="border-t border-slate-200 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="flex items-center space-x-2 w-full sm:w-auto">
+                        <label class="font-bold text-slate-800">Estado Yubarta:</label>
+                        <select id="modalStatusSelect" class="border border-slate-300 rounded px-3 py-1.5 bg-white text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-yubarta-teal">
+                            <option value="NUEVO">Nuevo</option>
+                            <option value="INTERESA"> Interesa / Postular</option>
+                            <option value="EN_REVISION"> En Revisión</option>
+                            <option value="DESCARTADO"> Descartado</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                        <a id="modalSecopLink" href="#" target="_blank" class="bg-yubarta-navy hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2">
+                            <span>Ir a SECOP II</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Executive Briefing Print/View Modal -->
+    <div id="reportModal" class="fixed inset-0 bg-slate-900/70 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start border-b border-slate-200 pb-4 mb-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">YUBARTA S.A.S. - INFORME DIARIO DE OPORTUNIDADES</h2>
+                    <p class="text-xs text-slate-500" id="reportDateText">Generado el 21 de Octubre, 2026 - Sede Cali</p>
+                </div>
+                <div class="flex space-x-2 no-print">
+                    <button onclick="window.print()" class="bg-yubarta-teal text-white px-3 py-1.5 rounded text-xs font-medium"><i class="fa-solid fa-print mr-1"></i> Imprimir / Guardar PDF</button>
+                    <button onclick="closeReportModal()" class="bg-slate-200 text-slate-700 px-3 py-1.5 rounded text-xs font-medium">Cerrar</button>
+                </div>
+            </div>
+
+            <div class="space-y-6 text-xs text-slate-800">
+                <div class="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg">
+                    <div>
+                        <span class="text-slate-500 font-medium">Total Filtrados Hoy:</span>
+                        <p class="text-lg font-bold" id="rptTotal">0</p>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 font-medium">Viables Yubarta (>75%):</span>
+                        <p class="text-lg font-bold text-emerald-600" id="rptAprobados">0</p>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 font-medium">Monto Acumulado Oportunidades:</span>
+                        <p class="text-lg font-bold text-slate-900" id="rptMonto">$0</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-sm text-slate-900 mb-2">Procesos Prioritarios para Postulación:</h3>
+                    <table class="w-full text-left border border-slate-200">
+                        <thead class="bg-slate-100 text-slate-700">
+                            <tr>
+                                <th class="p-2 border-b">ID</th>
+                                <th class="p-2 border-b">Entidad</th>
+                                <th class="p-2 border-b">Objeto</th>
+                                <th class="p-2 border-b">Cuantía</th>
+                                <th class="p-2 border-b">Cierre</th>
+                                <th class="p-2 border-b">Match</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rptTableBody">
+                            <!-- Dynamic report rows -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="border-t border-slate-200 pt-4 text-slate-500 italic">
+                    <p>* Reporte consolidado automáticamente para la gerencia comercial de Yubarta SAS.*</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- DATASET MOCK REPRESENTATIVE OF SECOP II ---
+        // Pre-loaded realistic Colombia SECOP II opportunities
+        const initialSecopData = [
+            {
+                id: "CO1.BDOS.4820192",
+                entity: "Alcaldía Distrital de Santiago de Cali - Deporte",
+                object: "Adquisición e implementación de elementos deportivos y balonería para escuelas de formación deportiva del distrito de Cali",
+                modality: "Subasta Inversa",
+                category: "Implementación Deportiva",
+                location: "Cali",
+                department: "Valle del Cauca",
+                budget: 185000000,
+                closingDate: "2026-10-24 16:00",
+                secopUrl: "https://www.colombiacompra.gov.co/secop-ii",
+                status: "INTERESA"
+            },
+            {
+                id: "CO1.BDOS.4821004",
+                entity: "Gobernación del Valle del Cauca - Secretaría de Educación",
+                object: "Suministro de kits escolares de papelería, útiles de oficina y cuadernos para instituciones educativas departamentales",
+                modality: "Selección Abreviada Menor Cuantía",
+                category: "Papelería",
+                location: "Valle del Cauca",
+                department: "Valle del Cauca",
+                budget: 340000000,
+                closingDate: "2026-10-28 10:00",
+                secopUrl: "https://www.colombiacompra.gov.co/secop-ii",
+                status: "NUEVO"
+            },
+            {
+                id: "CO1.BDOS.4822150",
+                entity: "Hospital Universitario del Valle (HUV) ESE - Cali",
+                object: "Suministro de calzado, dotación industrial y uniformes de personal asistencial y administrativo",
+                modality: "Subasta Inversa",
+                category: "Dotación",
+                location: "Cali",
+                department: "Valle del Cauca",
+                budget: 210000000,
+                closingDate: "2026-10-26 14:00",
+                secopUrl: "https://www.colombiacompra.gov.co/secop-ii",
+                status: "EN_REVISION"
+            },
+            {
+                id: "CO1.BDOS.4823411",
+                entity: "Instituto Municipal del Deporte y la Recreación (IMDER) Yumbo",
+                object: "Suministro de uniformes deportivos, camisetas y medallas para los juegos departamentales del Valle",
+                modality: "Mínima Cuantía",
+                category: "Uniformes",
+                location: "Valle del Cauca",
+                department: "Valle del Cauca",
+                budget: 48000000,
+                closingDate: "2026-10-23 17:00",
+                secopUrl: "https://www.colombiacompra.gov.co/secop-ii",
+                status: "NUEVO"
+            },
+            {
+                id: "CO1.BDOS.4824900",
+                entity: "SENA Regional Valle - Centro de Desarrollo Palmira",
+                object: "Adquisición de material de oficina, papelería técnica, resmas de papel y tóner para instructores",
+                modality: "Mínima Cuantía",
+                category: "Papelería",
+                location: "Valle del Cauca",
+                department: "Valle del Cauca",
+                budget: 28500000,
+                closingDate: "2026-10-22 11:30",
+                secopUrl: "https://www.colombiacompra.gov.co/secop-ii",
+                status: "NUEVO"
+            },
+            {
+                id: "CO1.BDOS.4825612",
+                entity: "Alcaldía Municipal de Jamundí",
+                object: "Dotación de vestuario, calzado y elementos de protección personal para los trabajadores operativos de infraestructura",
+                modality: "Selección Abreviada Menor Cuantía",
+                category: "Dotación",
+                location: "Valle del Cauca",
+                department: "Valle del Cauca",
+                budget: 125000000,
+                closingDate: "2026-10-27 15:00",
+                secopUrl: "https://www.colombiacompra.gov.co/secop-ii",
+                status: "NUEVO"
+            },
+            {
+                id: "CO1.BDOS.4826199",
+                entity: "Universidad del Valle - Sede Meléndez Cali",
+                object: "Suministro de papelería especializada, carpetas, útiles y suministros de oficina para dependencias académicas",
+                modality: "Subasta Inversa",
+                category: "Papelería",
+                location: "Cali",
+                department: "Valle del Cauca",
+                budget: 95000000,
+                closingDate: "2026-10-29 16:30",
+                secopUrl: "https://www.colombiacompra.gov.co/secop-ii",
+                status: "INTERESA"
+            },
+            {
+                id: "CO1.BDOS.4827010",
+                entity: "Policía Metropolitana de Santiago de Cali",
+                object: "Adquisición de implementos de acondicionamiento físico y equipos de entrenamiento deportivo para unidades",
+                modality: "Subasta Inversa",
+                category: "Implementación Deportiva",
+                location: "Cali",
+                department: "Valle del Cauca",
+                budget: 160000000,
+                closingDate: "2026-10-25 09:00",
+                secopUrl: "https://www.colombiacompra.gov.co/secop-ii",
+                status: "NUEVO"
+            },
+            {
+                id: "CO1.BDOS.4828333",
+                entity: "Alcaldía de Popayán - Cauca",
+                object: "Suministro de papelería e insumos de oficina institucionales",
+                modality: "Mínima Cuantía",
+                category: "Papelería",
+                location: "Nacional",
+                department: "Cauca",
+                budget: 35000000,
+                closingDate: "2026-10-23 15:00",
+                secopUrl: "https://www.colombiacompra.gov.co/secop-ii",
+                status: "NUEVO"
+            },
+            {
+                id: "CO1.BDOS.4829102",
+                entity: "Gobernación del Quindío",
+                object: "Dotación de prendas de vestir y chalecos institucionales para personal de campo",
+                modality: "Selección Abreviada Menor Cuantía",
+                category: "Uniformes",
+                location: "Nacional",
+                department: "Quindío",
+                budget: 88000000,
+                closingDate: "2026-10-30 11:00",
+                secopUrl: "https://www.colombiacompra.gov.co/secop-ii",
+                status: "DESCARTADO"
+            },
+            {
+                id: "CO1.BDOS.4830111",
+                entity: "Empresas Municipales de Cali (EMCALI)",
+                object: "Adquisición de uniformes técnicos, calzado dieléctrico e implementación de seguridad para acueducto",
+                modality: "Subasta Inversa",
+                category: "Dotación",
+                location: "Cali",
+                department: "Valle del Cauca",
+                budget: 450000000,
+                closingDate: "2026-11-02 16:00",
+                secopUrl: "https://www.colombiacompra.gov.co/secop-ii",
+                status: "INTERESA"
+            },
+            {
+                id: "CO1.BDOS.4831520",
+                entity: "Indervalle - Instituto del Deporte del Valle",
+                object: "Implementación deportiva integral: balones, mallas, cronómetros y kits de juzgamiento",
+                modality: "Selección Abreviada Menor Cuantía",
+                category: "Implementación Deportiva",
+                location: "Valle del Cauca",
+                department: "Valle del Cauca",
+                budget: 275000000,
+                closingDate: "2026-10-26 11:00",
+                secopUrl: "https://www.colombiacompra.gov.co/secop-ii",
+                status: "NUEVO"
+            }
+        ];
+
+        // --- GLOBAL APP STATE ---
+        let rawData = [...initialSecopData];
+        let filteredData = [];
+        let currentPage = 1;
+        const pageSize = 7;
+        let selectedProcess = null;
+
+        // --- MATCHING SCORING ALGORITHM FOR YUBARTA SAS ---
+        function calculateYubartaMatch(item) {
+            let score = 0;
+
+            // 1. Geography Priority (Max 35 pts)
+            if (item.location === "Cali") {
+                score += 35;
+            } else if (item.department === "Valle del Cauca" || item.location === "Valle del Cauca") {
+                score += 28;
+            } else {
+                score += 10; // National
+            }
+
+            // 2. Target Modality (Max 30 pts)
+            if (item.modality === "Subasta Inversa") score += 30;
+            else if (item.modality === "Mínima Cuantía") score += 30;
+            else if (item.modality.includes("Menor Cuantía")) score += 25;
+            else score += 5;
+
+            // 3. Category / Keywords match (Max 35 pts)
+            const objLower = item.object.toLowerCase();
+            const keywords = [
+                'dotacion', 'dotación', 'deportivo', 'deportiva', 'balones', 
+                'uniformes', 'papeleria', 'papelería', 'utiles', 'útiles', 
+                'calzado', 'vestuario', 'oficina', 'resmas'
+            ];
+
+            let matches = keywords.filter(kw => objLower.includes(kw));
+            if (matches.length >= 3) score += 35;
+            else if (matches.length === 2) score += 25;
+            else if (matches.length === 1) score += 18;
+            else score += 5;
+
+            return Math.min(score, 100);
+        }
+
+        // Initialize App on Load
+        window.onload = function() {
+            // Calculate initial match scores
+            rawData.forEach(item => {
+                item.matchScore = calculateYubartaMatch(item);
+            });
+            applyFilters();
+        };
+
+        // --- FILTERING & SORTING LOGIC ---
+        function applyFilters() {
+            const keyword = document.getElementById('filterKeyword').value.toLowerCase().trim();
+            const modalidad = document.getElementById('filterModalidad').value;
+            const category = document.getElementById('filterCategory').value;
+            const location = document.getElementById('filterLocation').value;
+            const minMatch = parseInt(document.getElementById('filterMatch').value) || 0;
+            const status = document.getElementById('filterStatus').value;
+            const maxBudget = parseFloat(document.getElementById('filterMaxBudget').value) || Infinity;
+
+            filteredData = rawData.filter(item => {
+                // Keyword
+                if (keyword && !item.object.toLowerCase().includes(keyword) && !item.entity.toLowerCase().includes(keyword) && !item.id.toLowerCase().includes(keyword)) {
+                    return false;
+                }
+                // Modalidad
+                if (modalidad !== 'ALL' && !item.modality.includes(modalidad)) {
+                    return false;
+                }
+                // Category
+                if (category !== 'ALL' && item.category !== category) {
+                    return false;
+                }
+                // Location
+                if (location !== 'ALL') {
+                    if (location === 'Cali' && item.location !== 'Cali') return false;
+                    if (location === 'Valle del Cauca' && item.department !== 'Valle del Cauca') return false;
+                }
+                // Match score
+                if (item.matchScore < minMatch) {
+                    return false;
+                }
+                // Status
+                if (status !== 'ALL' && item.status !== status) {
+                    return false;
+                }
+                // Budget
+                if (item.budget > maxBudget) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            sortData();
+            updateKPIs();
+        }
+
+        function sortData() {
+            const sortBy = document.getElementById('sortBy').value;
+
+            filteredData.sort((a, b) => {
+                if (sortBy === 'match_desc') return b.matchScore - a.matchScore;
+                if (sortBy === 'budget_desc') return b.budget - a.budget;
+                if (sortBy === 'budget_asc') return a.budget - b.budget;
+                if (sortBy === 'date_asc') return new Date(a.closingDate) - new Date(b.closingDate);
+                return 0;
+            });
+
+            currentPage = 1;
+            renderTable();
+        }
+
+        function resetFilters() {
+            document.getElementById('filterKeyword').value = '';
+            document.getElementById('filterModalidad').value = 'ALL';
+            document.getElementById('filterCategory').value = 'ALL';
+            document.getElementById('filterLocation').value = 'ALL';
+            document.getElementById('filterMatch').value = '0';
+            document.getElementById('filterStatus').value = 'ALL';
+            document.getElementById('filterMaxBudget').value = '';
+            applyFilters();
+        }
+
+        // --- RENDER TABLE & PAGINATION ---
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            const startIdx = (currentPage - 1) * pageSize;
+            const pageData = filteredData.slice(startIdx, startIdx + pageSize);
+
+            document.getElementById('filterCount').innerText = filteredData.length;
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-12 text-slate-400">
+                            <i class="fa-solid fa-folder-open text-4xl mb-2 block"></i>
+                            No se encontraron procesos en SECOP II con los criterios seleccionados.
+                        </td>
+                    </tr>
+                `;
+                renderPagination(0);
+                return;
+            }
+
+            pageData.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-100 cursor-pointer";
+
+                // Match Color Badge
+                let matchClass = "bg-slate-100 text-slate-700";
+                if (item.matchScore >= 85) matchClass = "bg-emerald-100 text-emerald-800 font-bold border border-emerald-300";
+                else if (item.matchScore >= 70) matchClass = "bg-blue-100 text-blue-800 font-bold border border-blue-300";
+                else if (item.matchScore >= 50) matchClass = "bg-amber-100 text-amber-800 font-semibold";
+
+                // Status Badge
+                let statusBadge = `<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] uppercase font-bold">Nuevo</span>`;
+                if (item.status === 'INTERESA') statusBadge = `<span class="bg-emerald-600 text-white px-2 py-0.5 rounded text-[10px] uppercase font-bold shadow-sm"><i class="fa-solid fa-star mr-1"></i> Participar</span>`;
+                if (item.status === 'EN_REVISION') statusBadge = `<span class="bg-amber-500 text-white px-2 py-0.5 rounded text-[10px] uppercase font-bold">En Revisión</span>`;
+                if (item.status === 'DESCARTADO') statusBadge = `<span class="bg-slate-300 text-slate-600 px-2 py-0.5 rounded text-[10px] uppercase font-bold line-through">Descartado</span>`;
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono font-medium text-yubarta-navy" onclick="openDetail('${item.id}')">${item.id}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-800 max-w-[180px] truncate" onclick="openDetail('${item.id}')" title="${item.entity}">
+                        ${item.entity}
+                    </td>
+                    <td class="py-3 px-4 max-w-[280px]" onclick="openDetail('${item.id}')">
+                        <p class="line-clamp-2 text-xs text-slate-700">${item.object}</p>
+                    </td>
+                    <td class="py-3 px-4" onclick="openDetail('${item.id}')">
+                        <span class="block font-medium text-slate-800">${item.modality}</span>
+                        <span class="text-[11px] text-slate-500"><i class="fa-solid fa-location-dot text-slate-400"></i> ${item.location}</span>
+                    </td>
+                    <td class="py-3 px-4 text-right font-mono font-bold text-slate-900" onclick="openDetail('${item.id}')">
+                        $${item.budget.toLocaleString('es-CO')}
+                    </td>
+                    <td class="py-3 px-4 text-center text-[11px] font-medium text-slate-600" onclick="openDetail('${item.id}')">
+                        <i class="fa-regular fa-clock mr-1 text-slate-400"></i>${item.closingDate}
+                    </td>
+                    <td class="py-3 px-4 text-center" onclick="openDetail('${item.id}')">
+                        <span class="px-2.5 py-1 rounded-full text-xs ${matchClass}">${item.matchScore}%</span>
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        ${statusBadge}
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <button onclick="openDetail('${item.id}')" class="bg-slate-100 hover:bg-yubarta-teal hover:text-white text-slate-600 p-1.5 rounded-md transition" title="Ver Detalle">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            renderPagination(filteredData.length);
+        }
+
+        function renderPagination(totalItems) {
+            const totalPages = Math.ceil(totalItems / pageSize) || 1;
+            const container = document.getElementById('paginationBtns');
+            const info = document.getElementById('paginationInfo');
+
+            info.innerText = `Mostrando ${totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0} a ${Math.min(currentPage * pageSize, totalItems)} de ${totalItems} oportunidades`;
+
+            container.innerHTML = '';
+
+            // Previous Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = `px-2.5 py-1 rounded border border-slate-300 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-100'}`;
+            prevBtn.innerHTML = `<i class="fa-solid fa-chevron-left"></i>`;
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => { currentPage--; renderTable(); };
+            container.appendChild(prevBtn);
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `px-2.5 py-1 rounded font-medium text-xs ${i === currentPage ? 'bg-yubarta-teal text-white' : 'border border-slate-300 hover:bg-slate-100'}`;
+                pageBtn.innerText = i;
+                pageBtn.onclick = () => { currentPage = i; renderTable(); };
+                container.appendChild(pageBtn);
+            }
+
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = `px-2.5 py-1 rounded border border-slate-300 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-100'}`;
+            nextBtn.innerHTML = `<i class="fa-solid fa-chevron-right"></i>`;
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => { currentPage++; renderTable(); };
+            container.appendChild(nextBtn);
+        }
+
+        // --- KPI UPDATE LOGIC ---
+        function updateKPIs() {
+            const total = filteredData.length;
+            const aprobados = filteredData.filter(d => d.matchScore >= 70).length;
+            const totalMonto = filteredData.reduce((sum, item) => sum + item.budget, 0);
+            const interesados = filteredData.filter(d => d.status === 'INTERESA').length;
+
+            document.getElementById('kpiTotal').innerText = total;
+            document.getElementById('kpiAprobados').innerText = aprobados;
+            document.getElementById('kpiRatio').innerText = total > 0 ? Math.round((aprobados / total) * 100) + '%' : '0%';
+            document.getElementById('kpiMonto').innerText = '$' + (totalMonto / 1000000).toFixed(1) + 'M';
+            document.getElementById('kpiInteresados').innerText = interesados;
+        }
+
+        // --- SCAN SIMULATION (SIMULATES DATOS ABIERTOS SECOP II FETCH) ---
+        function triggerScan() {
+            const scanBar = document.getElementById('scanBar');
+            const scanIcon = document.getElementById('scanIcon');
+            const statusText = document.getElementById('scanStatusText');
+
+            scanBar.classList.remove('hidden');
+            scanIcon.classList.add('fa-spin');
+
+            const steps = [
+                "Conectando a API Datos Abiertos Colombia (SECOP II)...",
+                "Filtrando por Modalidad: Subasta Inversa, Mínima y Menor Cuantía...",
+                "Analizando Rubros: Dotación, Deportivo, Papelería y Uniformes...",
+                "Ejecutando algoritmo de scoring Yubarta SAS (Sede Cali)..."
+            ];
+
+            let stepIndex = 0;
+            const interval = setInterval(() => {
+                stepIndex++;
+                if (stepIndex < steps.length) {
+                    statusText.innerText = steps[stepIndex];
+                } else {
+                    clearInterval(interval);
+                    scanBar.classList.add('hidden');
+                    scanIcon.classList.remove('fa-spin');
+
+                    // Add 2 fresh mock items to simulate new daily published processes
+                    const newItems = [
+                        {
+                            id: `CO1.BDOS.${Math.floor(4800000 + Math.random() * 90000)}`,
+                            entity: "Secretaría de Recreación y Deporte - Cali",
+                            object: "Suministro urgente de implementación deportiva y balonería oficial para torneos comunitarios Cali 2026",
+                            modality: "Mínima Cuantía",
+                            category: "Implementación Deportiva",
+                            location: "Cali",
+                            department: "Valle del Cauca",
+                            budget: 42000000,
+                            closingDate: "2026-10-24 12:00",
+                            secopUrl: "https://www.colombiacompra.gov.co/secop-ii",
+                            status: "NUEVO"
+                        },
+                        {
+                            id: `CO1.BDOS.${Math.floor(4800000 + Math.random() * 90000)}`,
+                            entity: "Instituto Bellas Artes de Cali",
+                            object: "Compra de papelería especializada, útiles de escritorio e insumos de impresión",
+                            modality: "Subasta Inversa",
+                            category: "Papelería",
+                            location: "Cali",
+                            department: "Valle del Cauca",
+                            budget: 65000000,
+                            closingDate: "2026-10-27 10:00",
+                            secopUrl: "https://www.colombiacompra.gov.co/secop-ii",
+                            status: "NUEVO"
+                        }
+                    ];
+
+                    newItems.forEach(item => {
+                        item.matchScore = calculateYubartaMatch(item);
+                        rawData.unshift(item);
+                    });
+
+                    applyFilters();
+                    alert(" Sincronización Exitosa: Se han detectado 2 nuevos procesos publicados hoy en SECOP II con alta viabilidad para Yubarta SAS.");
+                }
+            }, 800);
+        }
+
+        // --- MODAL DETAILS ---
+        function openDetail(id) {
+            selectedProcess = rawData.find(d => d.id === id);
+            if (!selectedProcess) return;
+
+            document.getElementById('modalProcessId').innerText = selectedProcess.id;
+            document.getElementById('modalEntity').innerText = selectedProcess.entity;
+            document.getElementById('modalModalidad').innerText = selectedProcess.modality;
+            document.getElementById('modalBudget').innerText = '$' + selectedProcess.budget.toLocaleString('es-CO') + ' COP';
+            document.getElementById('modalLocation').innerHTML = `<i class="fa-solid fa-location-dot text-red-500 mr-1"></i> ${selectedProcess.location} (${selectedProcess.department})`;
+            document.getElementById('modalClosing').innerText = selectedProcess.closingDate;
+            document.getElementById('modalObject').innerText = selectedProcess.object;
+
+            const badge = document.getElementById('modalMatchBadge');
+            badge.innerText = `${selectedProcess.matchScore}% Match Yubarta`;
+            badge.className = selectedProcess.matchScore >= 75 
+                ? "px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-500 text-white" 
+                : "px-2.5 py-1 rounded-md text-xs font-bold bg-amber-500 text-white";
+
+            const select = document.getElementById('modalStatusSelect');
+            select.value = selectedProcess.status;
+            select.onchange = (e) => {
+                selectedProcess.status = e.target.value;
+                applyFilters();
+            };
+
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+            selectedProcess = null;
+        }
+
+        // --- EXPORT TO EXCEL / CSV ---
+        function exportToCSV() {
+            if (filteredData.length === 0) {
+                alert("No hay datos para exportar.");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "ID Proceso,Entidad Compradora,Objeto,Modalidad,Ubicacion,Presupuesto COP,Fecha Cierre,Match Yubarta,Estado\n";
+
+            filteredData.forEach(item => {
+                const row = [
+                    `"${item.id}"`,
+                    `"${item.entity.replace(/"/g, '""')}"`,
+                    `"${item.object.replace(/"/g, '""')}"`,
+                    `"${item.modality}"`,
+                    `"${item.location}"`,
+                    item.budget,
+                    `"${item.closingDate}"`,
+                    `"${item.matchScore}%"`,
+                    `"${item.status}"`
+                ];
+                csvContent += row.join(",") + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `SECOP_II_Yubarta_SAS_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- EXECUTIVE REPORT MODAL ---
+        function generateReport() {
+            const highMatch = filteredData.filter(d => d.matchScore >= 75);
+            const totalMonto = filteredData.reduce((sum, item) => sum + item.budget, 0);
+
+            document.getElementById('rptTotal').innerText = filteredData.length;
+            document.getElementById('rptAprobados').innerText = highMatch.length;
+            document.getElementById('rptMonto').innerText = '$' + totalMonto.toLocaleString('es-CO') + ' COP';
+
+            const tbody = document.getElementById('rptTableBody');
+            tbody.innerHTML = '';
+
+            highMatch.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2 border-b font-mono font-bold">${item.id}</td>
+                    <td class="p-2 border-b">${item.entity}</td>
+                    <td class="p-2 border-b max-w-[200px] truncate">${item.object}</td>
+                    <td class="p-2 border-b font-mono">$${item.budget.toLocaleString('es-CO')}</td>
+                    <td class="p-2 border-b">${item.closingDate}</td>
+                    <td class="p-2 border-b font-bold text-emerald-600">${item.matchScore}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('reportModal').classList.remove('hidden');
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
